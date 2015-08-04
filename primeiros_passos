@@ -1,12 +1,221 @@
-Baixar os dados do painel HGDP em fase: 
+#Desculpa o teclado desconfigurado sem acentos ... maquina virtual.
+
+**** Requerimentos do sistema
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse8.html
+
+1) Recomenda-se baixar os dados do painel HGDP em fase.
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/data_suitable.html
+
+Mas, acho melhor baixar o Chr11 do mil genomas. Da pra baixar diretamente o Chr11.
+
+http://bochet.gcc.biostat.washington.edu/beagle/1000_Genomes_phase3_v5/
+
+Caso estejam em pre-fase, usa-se o Beagle para deixa-lo em fase.
+
+Script necessario para analisar a fase dos haplotipos:
+
+echo
+echo "*** Downloading some 1000 Genomes Project data to file: test.r1399.vcf.gz ***"
+echo
+wget http://faculty.washington.edu/browning/beagle/test.r1399.vcf.gz
+
+echo
+echo "*** Creating test files: ref.r1399.vcf.gz target.r1399.vcf.gz ***"
+echo
+zcat test.r1399.vcf.gz | cut -f1-190 | tr '/' '|' | gzip > ref.r1399.vcf.gz
+zcat test.r1399.vcf.gz | cut -f1-9,191-200 | gzip > target.r1399.vcf.gz
 
 
+echo
+echo "*** Running test analysis with \"gt=\" argument ***"
+echo
+java -jar beagle.r1399.jar gt=test.r1399.vcf.gz out=out.gt
 
-Baixar o mapa de recombinação do HapMap B37:
+echo
+echo "*** Running test analysis with \"gl=\" argument ***"
+echo
+java -jar beagle.r1399.jar gl=test.r1399.vcf.gz out=out.gl
+
+echo
+echo "*** Running test analysis with \"ref=\" argument ***"
+echo
+java -jar beagle.r1399.jar ref=ref.r1399.vcf.gz gt=target.r1399.vcf.gz out=out.ref
+
+-------------------------------------------------------------------------------------------
+***** Caso nao queira baixar o hapmap e construir o arquivo .recombfile da para utilizar o script ~makeuniformrecfile.pl~ 
+sem precisar baixar esses dados.
+
+http://www.maths.bris.ac.uk/~madjl/finestructure-old/data_example.html
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse11.html#x14-2000011
+
+2) Baixar o mapa de recombinação do HapMap B37:
 
 http://hapmap.ncbi.nlm.nih.gov/downloads/recombination/2011-01_phaseII_B37/
 
 Extrair a informação relacionada ao chr11 e usar o script fornecido pelo site do programa:
 
-(comando para extrair as linhas referentes ao chr 11)
 convertrecfile.pl -M hapmap
+
+--------------------------------------------------------------
+
+3) Converter o genoma do afetado para phase com o Beagle.
+
+-------------------------------------------------------------------------
+
+4) Converter todos os haplotipos obtidos com o Beagle para o formato chromopainter
+
+beagle2chromopainter.pl (BEAGLE format)
+
+Conversion script for going from BEAGLE format to Chromopainter PHASE format.
+
+Listing 23: beagle2chromopainter
+> beagle2chromopainter.pl
+ 
+CONVERTS PHASED BEAGLE OUTPUT TO CHROMOPAINTER-STYLE INPUT FILES 
+usage:   perl beagle2chromopainter.pl <options> beagle_phased_output_file output_filename_prefix 
+where: 
+        (i) beagle_phased_output_file = filename of BEAGLE phased file (unzipped) that contains phased haplotypes 
+        (ii) output_filename_prefix = filename prefix for chromopainter input file(s). The suffixes ".phase" amd 
+        ".ids" are added 
+ 
+The output, by default, is in CHROMOPAINTER v2 input format. NOTE THAT ONLY BIALLELIC SNP
+
+ 
+ !!! WARNING:  THIS PROGRAM DOES NOT SUFFICIENTLY CHECK FOR MISSPECIFIED FILES. WE ARE NOT ACCOUNTABLE FOR THIS 
+ RUNNING INCORRECTLY !!! 
+NOTE: TO USE IN CHROMOPAINTER: You also need a recombination map. Create this with the "convertrecfile.pl" or 
+"makeuniformrecfile.pl" scripts provided. 
+
+-------------------------------------------------------------------------------------------------
+
+5) Seguir os exemplos no seguinte link:
+
+> fs spoan.cp −idfile data.ids −phasefiles data.phase −recombfiles data.recombfile −go 
+
+
+    spoan.cp: Os arquivos e resultados intermediarios serao armazenados aqui.
+    -idfile data.ids: Define o nome de cada individuo, um por linha.
+    -phasefiles data.phase: Arquivos em convertidos em fase.
+    -recombfiles data.recombfile: Criado logo acima.
+    -go: Aconselhara sobre o que esta faltando ou nao.
+
+Exemplos
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse12.html#x15-3000012
+
+Possiveis problemas no meio do caminho
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse12.html#x15-3000012
+--------------------------------------------------------------------------------------------
+
+6) Para rodar obter a arvore, matriz de coancestralidade e outras analises leia os comandos dessa pagina
+
+http://www.maths.bris.ac.uk/~madjl/finestructure-old/data_example.htm
+
+7) Ordenar os nomes dos individuos para ser adequado a utilizacao no FineStructure e Chromopainter (adaptado para spoan o nome do arquivo).
+
+chromocombine -C -o spoan.unnamed -d unlinkedresparts
+
+chromopainterindivrename.pl indivnamelist.txt \ 
+
+  spoan.unnamed spoan
+
+--------------------------------------------------------------------------------------------
+
+8) Usar o finestructure para criar a arvore
+
+finestructure -x 100000 -y 100000 -z 100 \
+
+    spoan.chunkcounts.out \
+
+    spoan.mcmc.xml
+
+finestructure -x 10000 -m T \
+
+    spoan.chunkcounts.out \
+ 
+    spoan.mcmc.xml \
+
+    spoan.mcmc.tree.xml
+
+---------------------------------------------------------------
+
+
+Outras opcoes diversas
+
+http://www.maths.bris.ac.uk/~madjl/finestructure-old/data_example.html
+
+
+--------------------------------------------------------------------------------
+
+
+Scripts diversos para formatar e converter os inputs.
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse11.html
+
+------------------------------------------------------------------------------------------
+
+Armadilhas diversas
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse12.html#x15-3000012
+
+
+-------------------------------------------------------------------------------------------
+
+*** Ajudas sobre todas as etapas
+
+---------------------------------------------------------------------------------------------------------------
+
+Ajuda sobre o input, processamento, parametros, ferramentas do finesctructure e chromopainter,
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse4.html
+
+Respectivamente
+
+9) > fs −h input 
+
+10) > fs −h stages 
+
+11) > fs −h parameters 
+
+12) > fs −h tools
+
+----------------------------------------------------------------------------------------------
+
+
+As proximas linhas de comando compreendem dois modos distintos de obter ajuda sobre o arquivo de projeto obtido
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse3.html
+
+13) > fs −h info 
+
+USAGE: "fs <projectname>.cp <options> <actions>"
+
+Da uma visao geral dos resultados encontrados e ve o que esta faltando
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse3.html
+
+14) > fs −h 
+
+USAGE: "fs <projectname>.cp <options> <actions>" 
+
+-----------------------------------------------------------------------
+15) Help do chromopainter
+
+> fs −h cp 
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse5.html
+
+16) Help do chromocombine
+
+> fs −h combine 
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse6.html
+
+17) Help do finestructure 
+
+> fs −h fs 
+
+http://www.maths.bris.ac.uk/~madjl/finestructure/manualse7.html
+
