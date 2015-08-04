@@ -1,0 +1,12 @@
+Baixar os dados do painel HGDP em fase: 
+
+
+
+Baixar o mapa de recombinação do HapMap B37:
+
+http://hapmap.ncbi.nlm.nih.gov/downloads/recombination/2011-01_phaseII_B37/
+
+Extrair a informação relacionada ao chr11 e usar o script fornecido pelo site do programa:
+
+(comando para extrair as linhas referentes ao chr 11)
+convertrecfile.pl -M hapmap
